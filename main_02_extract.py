@@ -9,7 +9,7 @@ torch.cuda.is_available()
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 # Initialize a AEC-extractor instance
-ae = AutoencoderExtract(sess = 'extract_01.yaml', device = device)
+ae = AutoencoderExtract(sess = 'extract_02.yaml', device = device)
 # evaluate reconstruction
 ae.evaluate_reconstruction_on_examples(n_images = 64, shuffle = False).show()
 # extract (will save to disk as npz)
