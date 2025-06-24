@@ -18,116 +18,7 @@ import torch.nn as nn
 from torch.utils.data import Dataset
 from torchvision.transforms.functional import pil_to_tensor
 import torchvision.transforms.v2 as transforms
-import torch.optim as optim
-import json
 import yaml
-from torchinfo import summary
-
-
-class MakeColdAutoencoders:
-    """
-    Class for creating and saving multiple 'cold' (untrained) autoencoder architectures.
-    This class loads configuration from a YAML file, instantiates several encoder-decoder 
-    architecture variants from model_collection, summarizes their structures, and saves 
-    them as untrained model files for further use or inspection.
-    """
-
-    def __init__(self):
-        """
-        Loads configuration settings (such as paths for saving models) from
-        './config/config.yaml' and stores them as an instance attribute.
-        """
-        with open('./config/config.yaml') as f:
-            self.conf = yaml.safe_load(f)
-
-    def make(self):
-        """
-        This method creates several pairs of encoders and decoders with different 
-        architectural variants, summarizes their model structures, and saves the 
-        untrained (cold) models to disk as .pth files in the configured directory.
-
-        Returns:
-            dict: A dictionary containing model architecture summaries for all 
-                generated encoder and decoder pairs. The keys are model names, 
-                and the values are dicts with 'enc' and 'dec' summaries.
-        """
-        arch_di = {}
-
-        #--------------------------------
-        # primary models 
-
-        # Gen B REFERENCE model 
-        from model_collection.model_collection import EncoderGenBTP32 as Encoder
-        from model_collection.model_collection import DecoderGenBTP32 as Decoder
-        save_file_name = "GenBTP32_CH0256"
-        model_enc = Encoder(n_ch_in = 3, ch = [64, 128, 128, 128, 256])
-        model_dec = Decoder(n_ch_out = 3, ch = [256, 128, 128, 128, 64])
-        arch_di[save_file_name] = {}
-        arch_di[save_file_name]['enc'] = summary(model_enc, (1, 3, 128, 1152), depth = 1)
-        arch_di[save_file_name]['dec'] = summary(model_dec, (1, 256, 1, 36), depth = 1)
-        torch.save(model_enc, os.path.join(self.conf['path_untrained_models'], 'cold_encoder_' + save_file_name + '.pth'))
-        torch.save(model_dec, os.path.join(self.conf['path_untrained_models'], 'cold_decoder_' + save_file_name + '.pth'))
-
-        # NEW GEn C - without transpose conv
-        from model_collection.model_collection import EncoderGenCTP32 as Encoder
-        from model_collection.model_collection import DecoderGenCTP32 as Decoder
-        save_file_name = "GenC_new_TP32_CH0256"
-        model_enc = Encoder(n_ch_in = 3, n_ch_out = 256, ch = [64, 128, 128, 128])
-        model_dec = Decoder(n_ch_in = 256, n_ch_out = 3, ch = [128, 128, 128, 64])
-        arch_di[save_file_name] = {}
-        arch_di[save_file_name]['enc'] = summary(model_enc, (1, 3, 128, 1152), depth = 1)
-        arch_di[save_file_name]['dec'] = summary(model_dec, (1, 256, 1, 36), depth = 1)
-        torch.save(model_enc, os.path.join(self.conf['path_untrained_models'], 'cold_encoder_' + save_file_name + '.pth'))
-        torch.save(model_dec, os.path.join(self.conf['path_untrained_models'], 'cold_decoder_' + save_file_name + '.pth'))
-
-        # model with only 3 convolutional blocks (better reconstruction but small receptive field)
-        from model_collection.model_collection import EncoderGenB3blocks as Encoder
-        from model_collection.model_collection import DecoderGenB3blocks as Decoder
-        save_file_name = "GenB3blocks"
-        model_enc = Encoder(n_ch_in = 3, ch = [64, 128, 128, 256])
-        model_dec = Decoder(n_ch_out = 3, ch = [256, 128, 128, 64])
-        arch_di[save_file_name] = {}
-        arch_di[save_file_name]['enc'] = summary(model_enc, (1, 3, 128, 1152), depth = 1)
-        arch_di[save_file_name]['dec'] = summary(model_dec, (1, 256, 1, 144), depth = 1)
-        torch.save(model_enc, os.path.join(self.conf['path_untrained_models'], 'cold_encoder_' + save_file_name + '.pth'))
-        torch.save(model_dec, os.path.join(self.conf['path_untrained_models'], 'cold_decoder_' + save_file_name + '.pth'))
-
-        #--------------------------------
-        # variants of Gen B models 
-        from model_collection.model_collection import EncoderGenBTP32 as Encoder
-        from model_collection.model_collection import DecoderGenBTP32 as Decoder
-        save_file_name = "GenBTP32_CH0512"
-        model_enc = Encoder(n_ch_in = 3, ch = [64, 128, 128, 256, 512])
-        model_dec = Decoder(n_ch_out = 3, ch = [512, 256, 128, 128, 64])
-        arch_di[save_file_name] = {}
-        arch_di[save_file_name]['enc'] = summary(model_enc, (1, 3, 128, 1152), depth = 1)
-        arch_di[save_file_name]['dec'] = summary(model_dec, (1, 512, 1, 36), depth = 1)
-        torch.save(model_enc, os.path.join(self.conf['path_untrained_models'], 'cold_encoder_' + save_file_name + '.pth'))
-        torch.save(model_dec, os.path.join(self.conf['path_untrained_models'], 'cold_decoder_' + save_file_name + '.pth'))
-
-        from model_collection.model_collection import EncoderGenBTP16 as Encoder
-        from model_collection.model_collection import DecoderGenBTP16 as Decoder
-        save_file_name = "GenBTP16_CH0256"
-        model_enc = Encoder(n_ch_in = 3, ch = [64, 128, 128, 128, 256])
-        model_dec = Decoder(n_ch_out = 3, ch = [256, 128, 128, 128, 64])
-        arch_di[save_file_name] = {}
-        arch_di[save_file_name]['enc'] = summary(model_enc, (1, 3, 128, 1152))
-        arch_di[save_file_name]['dec'] = summary(model_dec, (1, 256, 1, 72))
-        torch.save(model_enc, os.path.join(self.conf['path_untrained_models'], 'cold_encoder_' + save_file_name + '.pth'))
-        torch.save(model_dec, os.path.join(self.conf['path_untrained_models'], 'cold_decoder_' + save_file_name + '.pth'))
-
-        from model_collection.model_collection import EncoderGenBTP08 as Encoder
-        from model_collection.model_collection import DecoderGenBTP08 as Decoder
-        save_file_name = "GenBTP08_CH0256"
-        model_enc = Encoder(n_ch_in = 3, ch = [64, 128, 128, 128, 256])
-        model_dec = Decoder(n_ch_out = 3, ch = [256, 128, 128, 128, 64])
-        arch_di[save_file_name] = {}
-        arch_di[save_file_name]['enc'] = summary(model_enc, (1, 3, 128, 1152))
-        arch_di[save_file_name]['dec'] = summary(model_dec, (1, 256, 1, 144))
-        torch.save(model_enc, os.path.join(self.conf['path_untrained_models'], 'cold_encoder_' + save_file_name + '.pth'))
-        torch.save(model_dec, os.path.join(self.conf['path_untrained_models'], 'cold_decoder_' + save_file_name + '.pth'))
-
-        return(arch_di)
 
 
 class SpectroImageDataset(Dataset):
@@ -205,229 +96,6 @@ class SpectroImageDataset(Dataset):
         """Number of images in the dataset."""
         return (len(self.all_img_files))
 
-
-class AutoencoderTrain:
-    """
-    Handles setup, training, and evaluation of an autoencoder for spectrogram images.
-
-    Attributes
-    ----------
-    sess_info : dict
-        Session configuration parameters.
-    train_dataset, test_dataset : SpectroImageDataset
-        Datasets for training and testing.
-    device : str or torch.device
-        Device for computation.
-    conf : dict
-        Project-wide configuration from YAML.
-    model_enc, model_dec : torch.nn.Module
-        Encoder and decoder models.
-    epoch_restart_value : int
-        Epoch to resume from (for hot start).
-    """
-  
-    def __init__(self, sess_json, device):
-        """
-        Initialize session, datasets, models, and config.
-
-        Parameters
-        ----------
-        sess_json : str
-            Name of session config JSON in ./session_params/training.
-        device : str or torch.device
-            Device for model training ("cpu" or "cuda").
-        """
-
-        with open(os.path.join('./session_params/training', sess_json )) as f:
-            sess_info = json.load(f)
-        self.sess_info = sess_info    
-        self.train_dataset = SpectroImageDataset(self.sess_info['imgpath_train'], par = self.sess_info['data_generator'], augment_1 = True, denoise_1 = False, augment_2 = False, denoise_2 = True)
-        self.test_dataset  = SpectroImageDataset(self.sess_info['imgpath_test'],  par = self.sess_info['data_generator'], augment_1 = False, denoise_1 = False, augment_2 = False, denoise_2 = True)
-        self.device = device
-        # load path from config 
-        with open('./config/config.yaml') as f:
-            self.conf = yaml.safe_load(f)
-
-        if sess_info['hot_start'] == False:
-            tstmp_0 = sess_info['model_tag']
-            path_enc = [a for a in os.listdir(self.conf['path_untrained_models']) if tstmp_0 in a and 'cold_encoder' in a][0]
-            path_dec = [a for a in os.listdir(self.conf['path_untrained_models']) if tstmp_0 in a and 'cold_decoder' in a][0]
-            self.model_enc = torch.load(os.path.join(self.conf['path_untrained_models'], path_enc), weights_only = False)
-            self.model_dec = torch.load(os.path.join(self.conf['path_untrained_models'], path_dec), weights_only = False)
-            self.model_enc = self.model_enc.to(self.device)
-            self.model_dec = self.model_dec.to(self.device)
-            sess_info['model_gen'] = sess_info['model_tag']
-            self.epoch_restart_value = 0
-        elif sess_info['hot_start'] == True:
-            tstmp_1 = sess_info['model_tag']
-            path_enc = [a for a in os.listdir(self.conf['path_trained_models']) if tstmp_1 in a and 'encoder_model' in a][0]
-            path_dec = [a for a in os.listdir(self.conf['path_trained_models']) if tstmp_1 in a and 'decoder_model' in a][0]
-            self.model_enc = torch.load(os.path.join(self.conf['path_trained_models'], path_enc), weights_only = False)
-            self.model_dec = torch.load(os.path.join(self.conf['path_trained_models'], path_dec), weights_only = False)
-            self.model_enc = self.model_enc.to(self.device)
-            self.model_dec = self.model_dec.to(self.device) 
-            # load info from previous training session 
-            path_sess = [a for a in os.listdir(self.conf['path_trained_models']) if tstmp_1 in a and '_session_info' in a][0]
-            with open(os.path.join(self.conf['path_trained_models'], path_sess), 'rb') as f:
-                self.di_origin_sess = pickle.load(f)
-            # load model generation 
-            sess_info['model_gen'] = self.di_origin_sess['sess_info']['model_gen']
-            self.epoch_restart_value = self.di_origin_sess['epoch'] + 1
-
-        else:
-            print("something is wrong with sess_info['hot_start']")
-        # return(model_enc, model_dec)
-
-
-    def make_data_augment_examples(self, batch_size = 12):
-        """
-        Returns a Plotly figure showing a batch of original and augmented images.
-
-        Parameters
-        ----------
-        batch_size : int
-            Number of image pairs to display.
-
-        Returns
-        -------
-        fig : plotly Figure
-            Visualization of data augmentation.
-        """
-        pt_loader = torch.utils.data.DataLoader(self.train_dataset, batch_size=batch_size,  shuffle=False, drop_last=True)
-        # take only first batch 
-        for i, (da_1, da_2, fi) in enumerate(pt_loader, 0):
-            if i > 0: break
-        fig = make_subplots(rows=batch_size, cols=2)
-        for ii in range(batch_size): 
-            # print(ii)
-            img_1 = da_1[ii].cpu().detach().numpy()
-            # img_1 = img_1.squeeze() # 1 ch
-            img_1 = np.moveaxis(img_1, 0, 2) # 3 ch
-            img_1 = 255*img_1 
-            img_2 = da_2[ii].cpu().detach().numpy()
-            # img_2 = img_2.squeeze()  # 1 ch
-            img_2 = np.moveaxis(img_2, 0, 2) # 3 ch
-            img_2 = 255*img_2 
-            fig.add_trace(px.imshow(img_1).data[0], row=ii+1, col=1)
-            fig.add_trace(px.imshow(img_2).data[0], row=ii+1, col=2)
-        fig.update_layout(autosize=True,height=400*batch_size, width = 2000)
-        return(fig)
-    
-
-    def train_autoencoder(self, devel = False):
-        """
-        Train autoencoder, evaluate on test data, save models and training metadata.
-
-        Parameters
-        ----------
-        devel : bool
-            If True, runs fewer batches per epoch for debugging.
-
-        Returns
-        -------
-        None
-        """
-
-        # train 
-        train_loader  = torch.utils.data.DataLoader(self.train_dataset, batch_size=self.sess_info['batch_size_tr'],  shuffle=True, drop_last=True)
-        test_loader   = torch.utils.data.DataLoader(self.test_dataset, batch_size=self.sess_info['batch_size_te'],  shuffle=True, drop_last=True)
-
-        # instantiate loss and optimizer
-        criterion = nn.MSELoss() #nn.BCELoss()
-        optimizer = optim.Adam(list(self.model_enc.parameters()) + list(self.model_dec.parameters()), lr=0.001)
-        # optimizer = optim.SGD(list(self.model_enc.parameters()) + list(self.model_dec.parameters()), lr=0.01, momentum=0.9)
-
-        n_batches_tr = self.train_dataset.__len__() // self.sess_info['batch_size_tr']
-        n_batches_te = self.test_dataset.__len__() // self.sess_info['batch_size_te']
-
-        mse_test_li = []
-        mse_trai_li = []
-        for i, epoch in enumerate(range(self.epoch_restart_value, self.epoch_restart_value + self.sess_info['n_epochs'])):
-            print('Epoch (full trainig history): ', epoch +1)
-            print(f"Epoch (current training run): {i + 1}/{self.sess_info['n_epochs']}")
-            #----------------
-            # Train the model 
-            _ = self.model_enc.train()
-            _ = self.model_dec.train()
-            trai_perf_li = []
-            for batch_tr, (da_tr_1, da_tr_2, fi) in enumerate(train_loader, 0):
-                if devel and batch_tr > 4:
-                    break
-                da_tr_1 = da_tr_1.to(self.device)
-                da_tr_2 = da_tr_2.to(self.device)
-                # reset the gradients 
-                optimizer.zero_grad()
-                # forward 
-                encoded = self.model_enc(da_tr_1)
-                # encoded.shape
-                decoded = self.model_dec(encoded)
-                # compute the reconstruction loss 
-                loss = criterion(decoded, da_tr_2)
-                trai_perf_li.append(loss.cpu().detach().numpy().item())
-                # compute the gradients
-                loss.backward()
-                # update the weights
-                optimizer.step()
-                # feedback every 10th batch
-                if batch_tr % 10 == 0:
-                    print('loss', np.round(loss.item(),5), " --- "  + str(batch_tr) + " out of " + str(n_batches_tr) + " batches")
-                    print(decoded.cpu().detach().numpy().min().round(3) , decoded.cpu().detach().numpy().max().round(3) )
-                    print("-")
-            mse_trai_li.append(np.array(trai_perf_li).mean())        
-
-            #----------------------------------
-            # Testing the model at end of epoch 
-            _ = self.model_enc.eval()
-            _ = self.model_dec.eval()
-            with torch.no_grad():
-                test_perf_li = []
-                for btchi, (da_te_1, da_te_2, fi) in enumerate(test_loader, 0):
-                    if btchi > 10: break # 100
-                    da_te_1 = da_te_1.to(self.device)
-                    da_te_2 = da_te_2.to(self.device)
-                    # forward 
-                    encoded = self.model_enc(da_te_1)
-                    # encoded.shape
-                    decoded = self.model_dec(encoded)
-                    # compute the reconstruction loss 
-                    loss_test = criterion(decoded, da_te_2)
-                    test_perf_li.append(loss_test.cpu().detach().numpy().item())
-                    # feedback every 10th batch
-                    if btchi % 10 == 0:
-                        print('TEST loss', np.round(loss_test.item(),5), " --- "  + str(btchi) + " out of " + str(n_batches_te) + " batches")
-                mse_test_li.append(np.array(test_perf_li).mean())
-            
-            # reshape performance metrics to a neat lil df
-            mse_test = np.array(mse_test_li)
-            mse_trai = np.array(mse_trai_li)
-            df_test = pd.DataFrame({"mse" : mse_test})
-            df_test['role'] = "test"
-            df_trai = pd.DataFrame({"mse" : mse_trai})
-            df_trai['role'] = "train"
-            df_mse = pd.concat([df_test, df_trai], axis = 0)
-            df_mse.shape
-
-            # Save the model and all params 
-            epoch_tag = '_epo' + str(epoch +1).zfill(3)
-            tstmp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-            model_save_name = tstmp + "_encoder_model_" + self.sess_info['model_gen'] + epoch_tag + ".pth"
-            torch.save(self.model_enc, os.path.join(self.conf['path_trained_models'], model_save_name))
-            model_save_name = tstmp + "_decoder_model_" + self.sess_info['model_gen'] + epoch_tag+ ".pth"
-            torch.save(self.model_dec, os.path.join(self.conf['path_trained_models'], model_save_name))
-            # save metadata 
-            di_sess = {'df_mse' : df_mse,'sess_info' : self.sess_info, 'epoch' : epoch}
-            sess_save_name = tstmp + "_session_info_" + self.sess_info['model_gen'] + epoch_tag + ".pkl"
-            with open(os.path.join(self.conf['path_trained_models'], sess_save_name), 'wb') as f:
-                pickle.dump(di_sess, f)
-            # save TorchScript model for external projects    
-            model_save_name = tstmp + "_encoder_script_" + self.sess_info['model_gen'] + epoch_tag + ".pth"
-            model_enc_scripted = torch.jit.script(self.model_enc) # Export to TorchScript
-            model_enc_scripted.save(os.path.join(self.conf['path_trained_models'], model_save_name))   
-            model_save_name = tstmp + "_decoder_script_" + self.sess_info['model_gen'] + epoch_tag + ".pth"
-            model_dec_scripted = torch.jit.script(self.model_dec) # Export to TorchScript
-            model_dec_scripted.save(os.path.join(self.conf['path_trained_models'], model_save_name))   
-
-
 class AutoencoderExtract:
     """
     A class for extracting features and evaluating image reconstructions using autoencoders.
@@ -435,23 +103,15 @@ class AutoencoderExtract:
     visualization, and pooling/aggregation of features over time using a trained autoencoder.
     """
   
-    def __init__(self, sess, device): 
+    def __init__(self, path_models, model_tag, path_images, device): 
         """
         Initialize the AutoencoderExtract instance.
         Loads session parameters and configuration files, and sets up paths and device information.
-        Args:
-            sess (str): Filename of the session YAML file in './session_params/extraction'.
-            device (str or torch.device): The device to run models on ('cpu' or 'cuda').
         """
-        with open(os.path.join('./session_params/extraction', sess)) as f:
-            self.sess_info = yaml.safe_load(f)    
-        self.path_images = self.sess_info['imgpath']
-        self.time_stamp_model = self.sess_info['model_tag']
-        # 
+        self.path_models = path_models
+        self.time_stamp_model = model_tag
+        self.path_images = path_images
         self.device = device
-        # load path from config 
-        with open('./config/config.yaml') as f:
-            self.conf = yaml.safe_load(f)
 
     def dim_reduce(self, X, n_neigh, n_dims_red):
         """
@@ -497,10 +157,10 @@ class AutoencoderExtract:
         # ---------------------
         # (2) load models 
         # NEW with TorchScript models 
-        path_enc = [a for a in os.listdir(self.conf['path_trained_models']) if self.time_stamp_model in a and 'encoder_script' in a][0]
-        path_dec = [a for a in os.listdir(self.conf['path_trained_models']) if self.time_stamp_model in a and 'decoder_script' in a][0]
-        model_enc = torch.jit.load(os.path.join(self.conf['path_trained_models'], path_enc))
-        model_dec = torch.jit.load(os.path.join(self.conf['path_trained_models'], path_dec))
+        path_enc = [a for a in os.listdir(self.path_models) if self.time_stamp_model in a and 'encoder_script' in a][0]
+        path_dec = [a for a in os.listdir(self.path_models) if self.time_stamp_model in a and 'decoder_script' in a][0]
+        model_enc = torch.jit.load(os.path.join(self.path_models, path_enc))
+        model_dec = torch.jit.load(os.path.join(self.path_models, path_dec))
         model_enc = model_enc.to(self.device)
         model_dec = model_dec.to(self.device)
         _ = model_enc.eval()
@@ -541,8 +201,8 @@ class AutoencoderExtract:
             None
         """
         # NEW with TorchScript models 
-        path_enc = [a for a in os.listdir(self.conf['path_trained_models']) if self.time_stamp_model in a and 'encoder_script' in a][0]
-        model_enc = torch.jit.load(os.path.join(self.conf['path_trained_models'], path_enc))
+        path_enc = [a for a in os.listdir(self.path_models) if self.time_stamp_model in a and 'encoder_script' in a][0]
+        model_enc = torch.jit.load(os.path.join(self.path_models, path_enc))
     
         model_enc = model_enc.to(self.device)
         _ = model_enc.eval()
