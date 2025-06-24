@@ -9,7 +9,7 @@
 
 ### Intallation (usage in Python project)
 * Make a fresh venv an install **fe_saec** from Python package wheel found on [this github repo](https://github.com/sergezaugg/feature_extraction_saec/releases)
-* ```pip install https://github.com/sergezaugg/xxxxxxxxxxxxxxxxxxxxxxx.whl```
+* ```pip install https://github.com/sergezaugg/feature_extraction_saec/releases/download/vx.x.x/fe_saec-x.x.x-py3-none-any.whl```
 * **torch** and **torchvision** must be installed separately for specific CUDA version
 * ```pip install torch torchvision --index-url https://download.pytorch.org/whl/cu126``` (e.g. for Windows with CUDA 12.6 and Python 3.12.8)
 * If other CUDA version needed, check instructions here https://pytorch.org/get-started/locally
