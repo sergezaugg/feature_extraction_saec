@@ -4,11 +4,12 @@
 #--------------------------------
 
 import torch
+
+# dev
 from src.fe_saec import AutoencoderExtract
 
-import fe_saec 
-
-
+# usage
+from fe_saec import AutoencoderExtract
 
 torch.cuda.is_available()
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
