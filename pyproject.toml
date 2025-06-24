@@ -1,0 +1,26 @@
+# Build setup to make package with single module 
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "fe_saec"
+version = "0.9.3"
+description = "Feature extraction with pre-trained spectrogram auto-encoders"
+readme = "README.md"
+requires-python = ">=3.11"
+license = {text = "MIT"}
+authors = [{ name="Serge Zaugg"}]
+dependencies = [
+    "pillow>=11.2.1",
+    "plotly>=6.1.2",
+    "umap-learn>=0.5.7",
+    ]
+
+[tool.hatch.build]
+sources = ["src"]
+
+# This is the key for a single-file module:
+[tool.hatch.build.targets.wheel]
+include = ["fe_saec.py"]
