@@ -1,7 +1,7 @@
 *.npz
 *.egg-info
-/tests_temp/
 __pycache__
+dist
 # Distribution / packaging
 .Python
 build/

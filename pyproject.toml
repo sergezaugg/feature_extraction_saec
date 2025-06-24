@@ -1,4 +1,4 @@
-# build setup to make package with single module 
+# Build setup to make package with single module 
 
 [build-system]
 requires = ["hatchling"]
@@ -6,7 +6,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "fe_saec"
-version = "0.0.1"
+version = "0.9.3"
 description = "Feature extraction with pre-trained spectrogram auto-encoders"
 readme = "README.md"
 requires-python = ">=3.11"
