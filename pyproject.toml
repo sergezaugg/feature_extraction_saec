@@ -1,0 +1,21 @@
+# simple build setup to make package with single module and with code inside ./src/
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "fe_saec"
+version = "0.0.1"
+description = "feature extraction with pre-trained spectrogram auto-encoders"
+readme = "README.md"
+requires-python = ">=3.11"
+license = {text = "MIT"}
+authors = [{ name="Serge Zaugg"}]
+
+[tool.hatch.build]
+sources = ["src"]
+
+# This is the key for a single-file module:
+[tool.hatch.build.targets.wheel]
+include = ["fe_saec.py"]
