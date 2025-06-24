@@ -4,22 +4,16 @@
 #--------------------------------
 
 import os 
-import pickle
 import numpy as np
-import pandas as pd
-import datetime
 from PIL import Image
 from sklearn.preprocessing import StandardScaler
 import umap.umap_ as umap
 import plotly.express as px
 from plotly.subplots import make_subplots
 import torch
-import torch.nn as nn
 from torch.utils.data import Dataset
 from torchvision.transforms.functional import pil_to_tensor
 import torchvision.transforms.v2 as transforms
-import yaml
-
 
 class SpectroImageDataset(Dataset):
     """
@@ -106,7 +100,7 @@ class AutoencoderExtract:
     def __init__(self, path_models, model_tag, path_images, device): 
         """
         Initialize the AutoencoderExtract instance.
-        Loads session parameters and configuration files, and sets up paths and device information.
+        Loads parameters and sets up paths and device information.
         """
         self.path_models = path_models
         self.time_stamp_model = model_tag
@@ -200,10 +194,9 @@ class AutoencoderExtract:
         Returns:
             None
         """
-        # NEW with TorchScript models 
+        # Load TorchScript models 
         path_enc = [a for a in os.listdir(self.path_models) if self.time_stamp_model in a and 'encoder_script' in a][0]
         model_enc = torch.jit.load(os.path.join(self.path_models, path_enc))
-    
         model_enc = model_enc.to(self.device)
         _ = model_enc.eval()
         # prepare dataloader
@@ -272,8 +265,7 @@ class AutoencoderExtract:
             file_name_out = tag_dim_red + '_'.join(file_name_in.split('_')[2:5])
             out_name = os.path.join(os.path.dirname(npzfile_full_path), file_name_out)
             np.savez(file = out_name, X_red = X_red, X_2D = X_2D, N = N)
-
-            
+           
 # devel 
 if __name__ == "__main__":
     print(22)
