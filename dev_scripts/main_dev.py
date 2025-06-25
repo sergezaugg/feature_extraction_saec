@@ -20,9 +20,6 @@ model_tag = "20250617_150956"
 path_images  = "D:/xc_real_projects/xc_sw_europe/xc_spectrograms"
 ae = FeatureExtractor(path_models, model_tag, path_images, device = device)
 
-# evaluate reconstruction
-ae.evaluate_reconstruction_on_examples(n_images = 64, shuffle = False).show()
-
 # extract (will save to disk as npz)
 ae.encoder_based_feature_extraction(devel = True)
 

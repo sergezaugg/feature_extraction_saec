@@ -8,8 +8,6 @@ import numpy as np
 from PIL import Image
 from sklearn.preprocessing import StandardScaler
 import umap.umap_ as umap
-import plotly.express as px
-from plotly.subplots import make_subplots
 import torch
 from torch.utils.data import Dataset
 from torchvision.transforms.functional import pil_to_tensor
@@ -132,58 +130,7 @@ class FeatureExtractor:
         X_out = scaler.fit_transform(X_trans)
         return(X_out)
 
-    def evaluate_reconstruction_on_examples(self, n_images = 16, shuffle = True):
-        """
-        Evaluate the quality of autoencoder reconstructions on a sample of images.
-        Loads a batch of images, reconstructs them using the trained autoencoder,
-        and plots side-by-side comparisons of original and reconstructed images.
-        Args:
-            n_images (int, optional): Number of images to sample and display. Default is 16.
-            shuffle (bool, optional): Whether to shuffle the dataset when sampling. Default is True.
-        Returns:
-            plotly.graph_objs._figure.Figure: A plotly figure showing original and reconstructed images.
-        """
-        # ---------------------
-        # (1) load a few images 
-        test_dataset = SpectroImageDataset(self.path_images, augment_1 = False, denoise_1 = False, augment_2 = False, denoise_2 = False)
-        test_loader = torch.utils.data.DataLoader(test_dataset, batch_size = n_images, shuffle = shuffle)
-        for i_test, (data_1, data_2 , _ ) in enumerate(test_loader, 0):
-            if i_test > 0: break
-            print(data_1.shape)
-            print(data_2.shape)
-        # ---------------------
-        # (2) load models 
-        # NEW with TorchScript models 
-        path_enc = [a for a in os.listdir(self.path_models) if self.time_stamp_model in a and 'encoder_script' in a][0]
-        path_dec = [a for a in os.listdir(self.path_models) if self.time_stamp_model in a and 'decoder_script' in a][0]
-        model_enc = torch.jit.load(os.path.join(self.path_models, path_enc))
-        model_dec = torch.jit.load(os.path.join(self.path_models, path_dec))
-        model_enc = model_enc.to(self.device)
-        model_dec = model_dec.to(self.device)
-        _ = model_enc.eval()
-        _ = model_dec.eval()
-        # ---------------------
-        # (3) predict 
-        data = data_1.to(self.device)
-        encoded = model_enc(data).to(self.device)
-        decoded = model_dec(encoded).to(self.device)
-        # ---------------------
-        # plot 
-        fig = make_subplots(rows=n_images, cols=2,)
-        for ii in range(n_images) : 
-            img_orig = data_2[ii].cpu().numpy()
-            # img_orig = img_orig.squeeze() # 1 ch
-            img_orig = np.moveaxis(img_orig, 0, 2) # 3 ch
-            img_orig = 255.0*img_orig  
-            img_reco = decoded[ii].cpu().detach().numpy()
-            # img_reco = img_reco.squeeze()  # 1 ch
-            img_reco = np.moveaxis(img_reco, 0, 2) # 3 ch
-            img_reco = 255.0*img_reco   
-            _ = fig.add_trace(px.imshow(img_orig).data[0], row=ii+1, col=1)
-            _ = fig.add_trace(px.imshow(img_reco).data[0], row=ii+1, col=2)
-        _ = fig.update_layout(autosize=True,height=400*n_images, width = 800)
-        _ = fig.update_layout(title="Model ID: " + self.time_stamp_model)
-        return(fig)
+   
 
     def encoder_based_feature_extraction(self, batch_size = 128, shuffle = True, devel = False):
         """
