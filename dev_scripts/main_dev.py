@@ -6,10 +6,10 @@
 import torch
 
 # dev
-from src.fe_saec import AutoencoderExtract
+from src.fe_saec import FeatureExtractor
 
 # usage
-from fe_saec import AutoencoderExtract
+from fe_saec import FeatureExtractor
 
 torch.cuda.is_available()
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -18,7 +18,7 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 path_models = "D:/xc_real_projects/pytorch_hot_models_keep"
 model_tag = "20250617_150956"
 path_images  = "D:/xc_real_projects/xc_sw_europe/xc_spectrograms"
-ae = AutoencoderExtract(path_models, model_tag, path_images, device = device)
+ae = FeatureExtractor(path_models, model_tag, path_images, device = device)
 
 # evaluate reconstruction
 ae.evaluate_reconstruction_on_examples(n_images = 64, shuffle = False).show()

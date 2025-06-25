@@ -90,7 +90,10 @@ class SpectroImageDataset(Dataset):
         """Number of images in the dataset."""
         return (len(self.all_img_files))
 
-class AutoencoderExtract:
+
+
+
+class FeatureExtractor:
     """
     A class for extracting features and evaluating image reconstructions using autoencoders.
     This class provides utilities for dimensionality reduction, feature extraction, 
@@ -99,7 +102,7 @@ class AutoencoderExtract:
   
     def __init__(self, path_models, model_tag, path_images, device): 
         """
-        Initialize the AutoencoderExtract instance.
+        Initialize the FeatureExtractor instance.
         Loads parameters and sets up paths and device information.
         """
         self.path_models = path_models
