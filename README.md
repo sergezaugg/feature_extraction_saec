@@ -16,7 +16,7 @@
 
 ### Usage 
 * Prepare PNG formatted color images of spectrograms, e.g. with [this tool](https://github.com/sergezaugg/xeno_canto_organizer)
-* [main.py](main.py) illustrates a pipeline to extract features
+* [sample_code.py](sample_code.py) illustrates a pipeline to extract features
 * Array and dim-reduced features are written to disk as NPZ files in parent of images dir.
 
 ### ML details
