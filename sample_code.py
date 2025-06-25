@@ -6,9 +6,6 @@
 import torch
 from fe_saec import SAEC_extractor
 
-
-
-
 torch.cuda.is_available()
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 

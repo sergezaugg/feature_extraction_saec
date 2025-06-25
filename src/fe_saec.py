@@ -1,6 +1,6 @@
 #--------------------------------
 # Author : Serge Zaugg
-# Description : small helper functions and bigger ML processes are wrapped into functions/classes here
+# Description : ML processes are wrapped into classes here
 #--------------------------------
 
 import os 
@@ -95,15 +95,17 @@ class SAEC_extractor:
     visualization, and pooling/aggregation of features over time using a trained autoencoder.
     """
   
-    def __init__(self, path_models, model_tag, path_images, device): 
+    def __init__(self, path_model, device): 
         """
         Initialize the SAEC_extractor instance.
         Loads parameters and sets up paths and device information.
         """
-        self.path_models = path_models
-        self.time_stamp_model = model_tag
-        self.path_images = path_images
-        self.device = device
+        if not ('encoder_script'in path_model):
+            print('Model not loaded! "path_model" must be the path to a TorchScript model that has "encoder_script" in its name')
+        else:    
+            self.path_enc = path_model
+            self.time_stamp_model = os.path.basename(self.path_enc)[0:15]
+            self.device = device
 
     def _dim_reduce(self, X, n_neigh, n_dims_red):
         """
@@ -127,7 +129,7 @@ class SAEC_extractor:
         X_out = scaler.fit_transform(X_trans)
         return(X_out)
 
-    def extract(self, batch_size = 128, shuffle = True, devel = False):
+    def extract(self, image_path, batch_size = 128, shuffle = True, devel = False):
         """
         Extract features from images using a trained encoder and save the latent representation.
         Applies the encoder to all images in the specified directory and saves the resulting
@@ -139,9 +141,10 @@ class SAEC_extractor:
         Returns:
             None
         """
+        self.path_images = image_path
+        self.npz_full_features_save_path = os.path.join(os.path.dirname(self.path_images), 'full_features_' + 'saec_' + self.time_stamp_model + '.npz')
         # Load TorchScript models 
-        path_enc = [a for a in os.listdir(self.path_models) if self.time_stamp_model in a and 'encoder_script' in a][0]
-        model_enc = torch.jit.load(os.path.join(self.path_models, path_enc))
+        model_enc = torch.jit.load(self.path_enc)
         model_enc = model_enc.to(self.device)
         _ = model_enc.eval()
         # prepare dataloader
@@ -165,29 +168,26 @@ class SAEC_extractor:
         feat = feat.squeeze()
         imfiles = np.concatenate(imfiles)
         # save as npz
-        tag = '_'.join(os.path.basename(path_enc).split('_')[0:2])     
+        tag = '_'.join(os.path.basename(self.path_enc).split('_')[0:2])     
         out_name = os.path.join(os.path.dirname(self.path_images), 'full_features_' + 'saec_' + tag + '.npz')
+        self.X = feat
+        self.N = imfiles
         np.savez(file = out_name, X = feat, N = imfiles)
 
-    # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-    def time_pool(self):
+    def time_pool(self, ecut=0):
         """
         in devel
         """
-        npzfile_full_path = os.path.join(os.path.dirname(self.path_images), 'full_features_' + 'saec_' + self.time_stamp_model + '.npz')
-        # load full features 
-        npzfile = np.load(npzfile_full_path)
-        X = npzfile['X']
-        print('Feature dim at start:', X.shape)
-        # cutting time edges (currently hard coded to 10% on each side)
-        ecut = np.ceil(0.10 * X.shape[2]).astype(int)
-        X = X[:, :, ecut:(-1*ecut)] 
+        print('Feature dim at start:', self.X.shape)
+        # cutting time edges
+        if ecut != 0:
+            X = self.X[:, :, ecut:(-1*ecut)]
+        else:
+            X = self.X
         print('Feature dim After cutting time edges:', X.shape)
         # full average pool over time 
         X_mea = X.mean(axis=2)
         X_std = X.std(axis=2)
-        X_mea.shape
-        X_std.shape
         X = np.concatenate([X_mea, X_std], axis = 1)
         print('Feature dim After average/std pool along time:', X.shape)
         self.X_pooled = X
@@ -199,22 +199,18 @@ class SAEC_extractor:
         if not hasattr(self, 'X_pooled'):
             print("Please first run .time_pool() ")    
         else:
-            npzfile_full_path = os.path.join(os.path.dirname(self.path_images), 'full_features_' + 'saec_' + self.time_stamp_model + '.npz')
-            file_name_in = os.path.basename(npzfile_full_path)        
-            # load full features 
-            npzfile = np.load(npzfile_full_path)
-            N = npzfile['N']
+            file_name_in = os.path.basename(self.npz_full_features_save_path)        
             # reassign to local variable X
             X = self.X_pooled
             # make 2D feats needed for plot 
             X_2D  = self._dim_reduce(X, n_neigh, 2)
             X_red = self._dim_reduce(X, n_neigh, reduced_dim)
-            print('Shapes: ', X.shape, X_red.shape, X_2D.shape, N.shape)
+            print('Shapes: ', X.shape, X_red.shape, X_2D.shape, self.N.shape)
             # save as npz
             tag_dim_red = "dimred_" + str(reduced_dim) + "_neigh_" + str(n_neigh) + "_"
             file_name_out = tag_dim_red + '_'.join(file_name_in.split('_')[2:5])
-            out_name = os.path.join(os.path.dirname(npzfile_full_path), file_name_out)
-            np.savez(file = out_name, X_red = X_red, X_2D = X_2D, N = N)
+            out_name = os.path.join(os.path.dirname(self.npz_full_features_save_path), file_name_out)
+            np.savez(file = out_name, X_red = X_red, X_2D = X_2D, N = self.N)
 
 
 # devel 
