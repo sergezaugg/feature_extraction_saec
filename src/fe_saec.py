@@ -132,7 +132,7 @@ class FeatureExtractor:
 
    
 
-    def encoder_based_feature_extraction(self, batch_size = 128, shuffle = True, devel = False):
+    def extract(self, batch_size = 128, shuffle = True, devel = False):
         """
         Extract features from images using a trained encoder and save the latent representation.
         Applies the encoder to all images in the specified directory and saves the resulting
