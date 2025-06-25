@@ -8,8 +8,6 @@ import numpy as np
 from PIL import Image
 from sklearn.preprocessing import StandardScaler
 import umap.umap_ as umap
-import plotly.express as px
-from plotly.subplots import make_subplots
 import torch
 from torch.utils.data import Dataset
 from torchvision.transforms.functional import pil_to_tensor
@@ -90,7 +88,7 @@ class SpectroImageDataset(Dataset):
         """Number of images in the dataset."""
         return (len(self.all_img_files))
 
-class AutoencoderExtract:
+class SAEC_extractor:
     """
     A class for extracting features and evaluating image reconstructions using autoencoders.
     This class provides utilities for dimensionality reduction, feature extraction, 
@@ -99,7 +97,7 @@ class AutoencoderExtract:
   
     def __init__(self, path_models, model_tag, path_images, device): 
         """
-        Initialize the AutoencoderExtract instance.
+        Initialize the SAEC_extractor instance.
         Loads parameters and sets up paths and device information.
         """
         self.path_models = path_models
@@ -107,7 +105,7 @@ class AutoencoderExtract:
         self.path_images = path_images
         self.device = device
 
-    def dim_reduce(self, X, n_neigh, n_dims_red):
+    def _dim_reduce(self, X, n_neigh, n_dims_red):
         """
         Perform dimensionality reduction on input features using UMAP, with pre- and post-scaling.
         Args:
@@ -129,60 +127,7 @@ class AutoencoderExtract:
         X_out = scaler.fit_transform(X_trans)
         return(X_out)
 
-    def evaluate_reconstruction_on_examples(self, n_images = 16, shuffle = True):
-        """
-        Evaluate the quality of autoencoder reconstructions on a sample of images.
-        Loads a batch of images, reconstructs them using the trained autoencoder,
-        and plots side-by-side comparisons of original and reconstructed images.
-        Args:
-            n_images (int, optional): Number of images to sample and display. Default is 16.
-            shuffle (bool, optional): Whether to shuffle the dataset when sampling. Default is True.
-        Returns:
-            plotly.graph_objs._figure.Figure: A plotly figure showing original and reconstructed images.
-        """
-        # ---------------------
-        # (1) load a few images 
-        test_dataset = SpectroImageDataset(self.path_images, augment_1 = False, denoise_1 = False, augment_2 = False, denoise_2 = False)
-        test_loader = torch.utils.data.DataLoader(test_dataset, batch_size = n_images, shuffle = shuffle)
-        for i_test, (data_1, data_2 , _ ) in enumerate(test_loader, 0):
-            if i_test > 0: break
-            print(data_1.shape)
-            print(data_2.shape)
-        # ---------------------
-        # (2) load models 
-        # NEW with TorchScript models 
-        path_enc = [a for a in os.listdir(self.path_models) if self.time_stamp_model in a and 'encoder_script' in a][0]
-        path_dec = [a for a in os.listdir(self.path_models) if self.time_stamp_model in a and 'decoder_script' in a][0]
-        model_enc = torch.jit.load(os.path.join(self.path_models, path_enc))
-        model_dec = torch.jit.load(os.path.join(self.path_models, path_dec))
-        model_enc = model_enc.to(self.device)
-        model_dec = model_dec.to(self.device)
-        _ = model_enc.eval()
-        _ = model_dec.eval()
-        # ---------------------
-        # (3) predict 
-        data = data_1.to(self.device)
-        encoded = model_enc(data).to(self.device)
-        decoded = model_dec(encoded).to(self.device)
-        # ---------------------
-        # plot 
-        fig = make_subplots(rows=n_images, cols=2,)
-        for ii in range(n_images) : 
-            img_orig = data_2[ii].cpu().numpy()
-            # img_orig = img_orig.squeeze() # 1 ch
-            img_orig = np.moveaxis(img_orig, 0, 2) # 3 ch
-            img_orig = 255.0*img_orig  
-            img_reco = decoded[ii].cpu().detach().numpy()
-            # img_reco = img_reco.squeeze()  # 1 ch
-            img_reco = np.moveaxis(img_reco, 0, 2) # 3 ch
-            img_reco = 255.0*img_reco   
-            _ = fig.add_trace(px.imshow(img_orig).data[0], row=ii+1, col=1)
-            _ = fig.add_trace(px.imshow(img_reco).data[0], row=ii+1, col=2)
-        _ = fig.update_layout(autosize=True,height=400*n_images, width = 800)
-        _ = fig.update_layout(title="Model ID: " + self.time_stamp_model)
-        return(fig)
-
-    def encoder_based_feature_extraction(self, batch_size = 128, shuffle = True, devel = False):
+    def extract(self, batch_size = 128, shuffle = True, devel = False):
         """
         Extract features from images using a trained encoder and save the latent representation.
         Applies the encoder to all images in the specified directory and saves the resulting
@@ -224,24 +169,16 @@ class AutoencoderExtract:
         out_name = os.path.join(os.path.dirname(self.path_images), 'full_features_' + 'saec_' + tag + '.npz')
         np.savez(file = out_name, X = feat, N = imfiles)
 
-    def time_pool_and_dim_reduce(self, n_neigh = 10, reduced_dim = [2,4,8,16,32]):
+    # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+    def time_pool(self):
         """
-        Aggregate (pool) features over the time dimension and apply dimensionality reduction.
-        Loads previously extracted feature arrays, chops time edges, computes mean and std over time,
-        and applies UMAP to obtain reduced representations in various dimensions. Saves the results as .npz files.
-        Args:
-            n_neigh (int, optional): Number of neighbors for UMAP. Default is 10.
-            reduced_dim (list of int, optional): List of target dimensions for reduction. Default is [2,4,8,16,32].
-        Returns:
-            None
+        in devel
         """
         npzfile_full_path = os.path.join(os.path.dirname(self.path_images), 'full_features_' + 'saec_' + self.time_stamp_model + '.npz')
-        file_name_in = os.path.basename(npzfile_full_path)        
         # load full features 
         npzfile = np.load(npzfile_full_path)
         X = npzfile['X']
-        N = npzfile['N']
-        # combine information over time
+        print('Feature dim at start:', X.shape)
         # cutting time edges (currently hard coded to 10% on each side)
         ecut = np.ceil(0.10 * X.shape[2]).astype(int)
         X = X[:, :, ecut:(-1*ecut)] 
@@ -253,19 +190,33 @@ class AutoencoderExtract:
         X_std.shape
         X = np.concatenate([X_mea, X_std], axis = 1)
         print('Feature dim After average/std pool along time:', X.shape)
-        # X.shape
-        # N.shape
-        # make 2d feats needed for plot 
-        X_2D = self.dim_reduce(X, n_neigh, 2)
-        for n_dims_red in reduced_dim:
-            X_red = self.dim_reduce(X, n_neigh, n_dims_red)
-            print(X.shape, X_red.shape, X_2D.shape, N.shape)
+        self.X_pooled = X
+      
+    def reduce_dimension(self, n_neigh = 10, reduced_dim = 8):
+        """
+        in devel
+        """
+        if not hasattr(self, 'X_pooled'):
+            print("Please first run .time_pool() ")    
+        else:
+            npzfile_full_path = os.path.join(os.path.dirname(self.path_images), 'full_features_' + 'saec_' + self.time_stamp_model + '.npz')
+            file_name_in = os.path.basename(npzfile_full_path)        
+            # load full features 
+            npzfile = np.load(npzfile_full_path)
+            N = npzfile['N']
+            # reassign to local variable X
+            X = self.X_pooled
+            # make 2D feats needed for plot 
+            X_2D  = self._dim_reduce(X, n_neigh, 2)
+            X_red = self._dim_reduce(X, n_neigh, reduced_dim)
+            print('Shapes: ', X.shape, X_red.shape, X_2D.shape, N.shape)
             # save as npz
-            tag_dim_red = "dimred_" + str(n_dims_red) + "_neigh_" + str(n_neigh) + "_"
+            tag_dim_red = "dimred_" + str(reduced_dim) + "_neigh_" + str(n_neigh) + "_"
             file_name_out = tag_dim_red + '_'.join(file_name_in.split('_')[2:5])
             out_name = os.path.join(os.path.dirname(npzfile_full_path), file_name_out)
             np.savez(file = out_name, X_red = X_red, X_2D = X_2D, N = N)
-           
+
+
 # devel 
 if __name__ == "__main__":
     print(22)

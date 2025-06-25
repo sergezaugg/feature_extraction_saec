@@ -6,7 +6,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "fe_saec"
-version = "0.9.3"
+version = "0.9.4"
 description = "Feature extraction with pre-trained spectrogram auto-encoders"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -14,7 +14,6 @@ license = {text = "MIT"}
 authors = [{ name="Serge Zaugg"}]
 dependencies = [
     "pillow>=11.2.1",
-    "plotly>=6.1.2",
     "umap-learn>=0.5.7",
     ]
 
