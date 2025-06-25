@@ -192,31 +192,29 @@ class SAEC_extractor:
         print('Feature dim After average/std pool along time:', X.shape)
         self.X_pooled = X
       
-    # def reduce_dimension(self, npzfile_full_path = None, n_neigh = 10, reduced_dim = 8):
     def reduce_dimension(self, n_neigh = 10, reduced_dim = 8):
         """
         in devel
         """
-        npzfile_full_path = os.path.join(os.path.dirname(self.path_images), 'full_features_' + 'saec_' + self.time_stamp_model + '.npz')
-        file_name_in = os.path.basename(npzfile_full_path)        
-        # load full features 
-        npzfile = np.load(npzfile_full_path)
-        N = npzfile['N']
-        # reassign to local variable X
-        X = self.X_pooled
-        # make 2D feats needed for plot 
-        X_2D  = self._dim_reduce(X, n_neigh, 2)
-        X_red = self._dim_reduce(X, n_neigh, reduced_dim)
-        print('Shapes: ', X.shape, X_red.shape, X_2D.shape, N.shape)
-        # save as npz
-        tag_dim_red = "dimred_" + str(reduced_dim) + "_neigh_" + str(n_neigh) + "_"
-        file_name_out = tag_dim_red + '_'.join(file_name_in.split('_')[2:5])
-        out_name = os.path.join(os.path.dirname(npzfile_full_path), file_name_out)
-        np.savez(file = out_name, X_red = X_red, X_2D = X_2D, N = N)
-
-
-
-
+        if not hasattr(self, 'X_pooled'):
+            print("Please first run .time_pool() ")    
+        else:
+            npzfile_full_path = os.path.join(os.path.dirname(self.path_images), 'full_features_' + 'saec_' + self.time_stamp_model + '.npz')
+            file_name_in = os.path.basename(npzfile_full_path)        
+            # load full features 
+            npzfile = np.load(npzfile_full_path)
+            N = npzfile['N']
+            # reassign to local variable X
+            X = self.X_pooled
+            # make 2D feats needed for plot 
+            X_2D  = self._dim_reduce(X, n_neigh, 2)
+            X_red = self._dim_reduce(X, n_neigh, reduced_dim)
+            print('Shapes: ', X.shape, X_red.shape, X_2D.shape, N.shape)
+            # save as npz
+            tag_dim_red = "dimred_" + str(reduced_dim) + "_neigh_" + str(n_neigh) + "_"
+            file_name_out = tag_dim_red + '_'.join(file_name_in.split('_')[2:5])
+            out_name = os.path.join(os.path.dirname(npzfile_full_path), file_name_out)
+            np.savez(file = out_name, X_red = X_red, X_2D = X_2D, N = N)
 
 
 # devel 

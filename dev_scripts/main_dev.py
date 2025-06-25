@@ -4,12 +4,10 @@
 #--------------------------------
 
 import torch
-
 # dev
 from src.fe_saec import SAEC_extractor
-
 # usage
-from fe_saec import SAEC_extractor
+# from fe_saec import SAEC_extractor
 
 torch.cuda.is_available()
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -22,10 +20,9 @@ ae = SAEC_extractor(path_models, model_tag, path_images, device = device)
 
 # extract (will save to disk as npz)
 ae.extract(devel = True)
-
-# time_pool_and_dim_reduce
+# time pool
 ae.time_pool()
-
+# dim reduce
 [ae.reduce_dimension(n_neigh = 10, reduced_dim = d) for d in [2,4,8,16]]
 
 
