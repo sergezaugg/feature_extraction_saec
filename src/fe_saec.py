@@ -88,9 +88,6 @@ class SpectroImageDataset(Dataset):
         """Number of images in the dataset."""
         return (len(self.all_img_files))
 
-
-
-
 class FeatureExtractor:
     """
     A class for extracting features and evaluating image reconstructions using autoencoders.
@@ -108,7 +105,7 @@ class FeatureExtractor:
         self.path_images = path_images
         self.device = device
 
-    def dim_reduce(self, X, n_neigh, n_dims_red):
+    def _dim_reduce(self, X, n_neigh, n_dims_red):
         """
         Perform dimensionality reduction on input features using UMAP, with pre- and post-scaling.
         Args:
@@ -129,8 +126,6 @@ class FeatureExtractor:
         X_trans = reducer.fit_transform(X_scaled)
         X_out = scaler.fit_transform(X_trans)
         return(X_out)
-
-   
 
     def extract(self, batch_size = 128, shuffle = True, devel = False):
         """
@@ -174,24 +169,16 @@ class FeatureExtractor:
         out_name = os.path.join(os.path.dirname(self.path_images), 'full_features_' + 'saec_' + tag + '.npz')
         np.savez(file = out_name, X = feat, N = imfiles)
 
-    def time_pool_and_dim_reduce(self, n_neigh = 10, reduced_dim = [2,4,8,16,32]):
+    # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+    def time_pool(self):
         """
-        Aggregate (pool) features over the time dimension and apply dimensionality reduction.
-        Loads previously extracted feature arrays, chops time edges, computes mean and std over time,
-        and applies UMAP to obtain reduced representations in various dimensions. Saves the results as .npz files.
-        Args:
-            n_neigh (int, optional): Number of neighbors for UMAP. Default is 10.
-            reduced_dim (list of int, optional): List of target dimensions for reduction. Default is [2,4,8,16,32].
-        Returns:
-            None
+        in devel
         """
         npzfile_full_path = os.path.join(os.path.dirname(self.path_images), 'full_features_' + 'saec_' + self.time_stamp_model + '.npz')
-        file_name_in = os.path.basename(npzfile_full_path)        
         # load full features 
         npzfile = np.load(npzfile_full_path)
         X = npzfile['X']
-        N = npzfile['N']
-        # combine information over time
+        print('Feature dim at start:', X.shape)
         # cutting time edges (currently hard coded to 10% on each side)
         ecut = np.ceil(0.10 * X.shape[2]).astype(int)
         X = X[:, :, ecut:(-1*ecut)] 
@@ -203,19 +190,35 @@ class FeatureExtractor:
         X_std.shape
         X = np.concatenate([X_mea, X_std], axis = 1)
         print('Feature dim After average/std pool along time:', X.shape)
-        # X.shape
-        # N.shape
-        # make 2d feats needed for plot 
-        X_2D = self.dim_reduce(X, n_neigh, 2)
-        for n_dims_red in reduced_dim:
-            X_red = self.dim_reduce(X, n_neigh, n_dims_red)
-            print(X.shape, X_red.shape, X_2D.shape, N.shape)
-            # save as npz
-            tag_dim_red = "dimred_" + str(n_dims_red) + "_neigh_" + str(n_neigh) + "_"
-            file_name_out = tag_dim_red + '_'.join(file_name_in.split('_')[2:5])
-            out_name = os.path.join(os.path.dirname(npzfile_full_path), file_name_out)
-            np.savez(file = out_name, X_red = X_red, X_2D = X_2D, N = N)
-           
+        self.X_pooled = X
+      
+    # def reduce_dimension(self, npzfile_full_path = None, n_neigh = 10, reduced_dim = 8):
+    def reduce_dimension(self, n_neigh = 10, reduced_dim = 8):
+        """
+        in devel
+        """
+        npzfile_full_path = os.path.join(os.path.dirname(self.path_images), 'full_features_' + 'saec_' + self.time_stamp_model + '.npz')
+        file_name_in = os.path.basename(npzfile_full_path)        
+        # load full features 
+        npzfile = np.load(npzfile_full_path)
+        N = npzfile['N']
+        # reassign to local variable X
+        X = self.X_pooled
+        # make 2D feats needed for plot 
+        X_2D  = self._dim_reduce(X, n_neigh, 2)
+        X_red = self._dim_reduce(X, n_neigh, reduced_dim)
+        print('Shapes: ', X.shape, X_red.shape, X_2D.shape, N.shape)
+        # save as npz
+        tag_dim_red = "dimred_" + str(reduced_dim) + "_neigh_" + str(n_neigh) + "_"
+        file_name_out = tag_dim_red + '_'.join(file_name_in.split('_')[2:5])
+        out_name = os.path.join(os.path.dirname(npzfile_full_path), file_name_out)
+        np.savez(file = out_name, X_red = X_red, X_2D = X_2D, N = N)
+
+
+
+
+
+
 # devel 
 if __name__ == "__main__":
     print(22)

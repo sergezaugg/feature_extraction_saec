@@ -24,4 +24,10 @@ ae = FeatureExtractor(path_models, model_tag, path_images, device = device)
 ae.extract(devel = True)
 
 # time_pool_and_dim_reduce
-ae.time_pool_and_dim_reduce(n_neigh = 10, reduced_dim = [2, 4, 8, 16])
+ae.time_pool()
+
+[ae.reduce_dimension(n_neigh = 10, reduced_dim = d) for d in [2,4,8,16]]
+
+
+
+
