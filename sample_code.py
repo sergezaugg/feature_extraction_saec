@@ -9,10 +9,11 @@ from fe_saec import SAEC_extractor
 torch.cuda.is_available()
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-# define full path to a TorchScript model
-path_model = "./dev_data/20250614_004030_encoder_script_GenBTP32_CH0256_epo006.pth"
+# path to a TorchScript model
+path_model = "./dev/dev_data/20250614_004030_encoder_script_GenBTP32_CH0256_epo006.pth"
 # path to dir with images 
-path_images  = "./dev_data/images"
+path_images  = "./dev/dev_data/images"
+# path where features will be saved
 path_save = "./dev/dev_outp"
 
 # instantiate with a model

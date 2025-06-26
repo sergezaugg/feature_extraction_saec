@@ -24,7 +24,7 @@ ae.extract(image_path = path_images, fe_save_path = path_save, batch_size = 16, 
 ae.time_pool(ecut=2)
 ae.time_pool()
 # dim reduce
-ae.reduce_dimension(n_neigh = 10, reduced_dim = 8) 
+ae.reduce_dimension(n_neigh = 10, reduced_dim = 11) 
 
 ae.time_stamp_model
 ae.X.shape
