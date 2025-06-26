@@ -13,8 +13,8 @@ torch.cuda.is_available()
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 # Initialize a AEC-extractor instance
-path_model = "./dev_data/20250614_004030_encoder_script_GenBTP32_CH0256_epo006.pth"
-path_images  = "./dev_data/images"
+path_model = "./dev/dev_data/20250614_004030_encoder_script_GenBTP32_CH0256_epo006.pth"
+path_images  = "./dev/dev_data/images"
 path_save = "./dev/dev_outp"
 
 ae = SAEC_extractor(path_model = path_model, device = device) 
