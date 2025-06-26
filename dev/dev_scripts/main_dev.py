@@ -13,9 +13,9 @@ torch.cuda.is_available()
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 # Initialize a AEC-extractor instance
-path_model = "D:/xc_real_projects/pytorch_hot_models_keep/20250617_150956_encoder_script_GenC_new_TP32_epo007.pth"
-path_images  = "D:/xc_real_projects/xc_sw_europe/xc_spectrograms"
-path_save = "C:/Users/sezau/Downloads"
+path_model = "./dev_data/20250614_004030_encoder_script_GenBTP32_CH0256_epo006.pth"
+path_images  = "./dev_data/images"
+path_save = "./dev/dev_outp"
 
 ae = SAEC_extractor(path_model = path_model, device = device) 
 # extract (will save to disk as npz)
