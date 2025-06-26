@@ -129,7 +129,7 @@ class SAEC_extractor:
         X_out = scaler.fit_transform(X_trans)
         return(X_out)
 
-    def extract(self, image_path, batch_size = 128, shuffle = True, devel = False):
+    def extract(self, image_path, fe_save_path,  batch_size = 128, shuffle = True, devel = False):
         """
         Extract features from images using a trained encoder and save the latent representation.
         Applies the encoder to all images in the specified directory and saves the resulting
@@ -142,7 +142,7 @@ class SAEC_extractor:
             None
         """
         self.path_images = image_path
-        self.npz_full_features_save_path = os.path.join(os.path.dirname(self.path_images), 'full_features_' + 'saec_' + self.time_stamp_model + '.npz')
+        self.fe_save_path = fe_save_path
         # Load TorchScript models 
         model_enc = torch.jit.load(self.path_enc)
         model_enc = model_enc.to(self.device)
@@ -169,7 +169,7 @@ class SAEC_extractor:
         imfiles = np.concatenate(imfiles)
         # save as npz
         tag = '_'.join(os.path.basename(self.path_enc).split('_')[0:2])     
-        out_name = os.path.join(os.path.dirname(self.path_images), 'full_features_' + 'saec_' + tag + '.npz')
+        out_name = os.path.join(self.fe_save_path, 'full_features_' + 'saec_' + tag + '.npz')
         self.X = feat
         self.N = imfiles
         np.savez(file = out_name, X = feat, N = imfiles)
@@ -199,18 +199,13 @@ class SAEC_extractor:
         if not hasattr(self, 'X_pooled'):
             print("Please first run .time_pool() ")    
         else:
-            file_name_in = os.path.basename(self.npz_full_features_save_path)        
-            # reassign to local variable X
-            X = self.X_pooled
-            # make 2D feats needed for plot 
-            X_2D  = self._dim_reduce(X, n_neigh, 2)
-            X_red = self._dim_reduce(X, n_neigh, reduced_dim)
-            print('Shapes: ', X.shape, X_red.shape, X_2D.shape, self.N.shape)
+            self.X_2D  = self._dim_reduce(self.X_pooled, n_neigh, 2) # make 2D feats needed for plot 
+            self.X_red = self._dim_reduce(self.X_pooled, n_neigh, reduced_dim)
+            print('Shapes: ', self.X_pooled.shape, self.X_red.shape, self.X_2D.shape, self.N.shape)
             # save as npz
-            tag_dim_red = "dimred_" + str(reduced_dim) + "_neigh_" + str(n_neigh) + "_"
-            file_name_out = tag_dim_red + '_'.join(file_name_in.split('_')[2:5])
-            out_name = os.path.join(os.path.dirname(self.npz_full_features_save_path), file_name_out)
-            np.savez(file = out_name, X_red = X_red, X_2D = X_2D, N = self.N)
+            file_name_out = "dimred_" + str(reduced_dim) + "_neigh_" + str(n_neigh) + "_" + 'saec_' + self.time_stamp_model + '.npz'
+            out_name = os.path.join(self.fe_save_path, file_name_out)
+            np.savez(file = out_name, X_red = self.X_red, X_2D = self.X_2D, N = self.N)
 
 
 # devel 
