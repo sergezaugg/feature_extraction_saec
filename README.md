@@ -1,8 +1,8 @@
 # Feature extraction with pre-trained spectrogram auto-encoders (fe_saec)
 
 ### Overview
-* This is a python package to extract encoder-based features from spectrograms 
-* Extract array features with these auto-encoders and convert them to linear features (details in pic below)
+* A python package to extract encoder-based features from spectrograms 
+* Extracts array features with pre-trained encoders and converts them to linear features (details in pic below)
 * Encoders perform partial pooling of time axis (latent array representation is 2D -> channel by time)
 * Extracted features are meant to be used in companion [project](https://github.com/sergezaugg/spectrogram_image_clustering) and its [frontend](https://spectrogram-image-clustering.streamlit.app/)
 
@@ -16,8 +16,8 @@
 
 ### Usage 
 * Prepare PNG formatted color images of spectrograms, e.g. with [this tool](https://github.com/sergezaugg/xeno_canto_organizer)
-* [main.py](main.py) illustrates a pipeline to extract features
-* Array and dim-reduced features are written to disk as NPZ files in parent of images dir.
+* [sample_code.py](sample_code.py) illustrates a pipeline to extract features
+* Extracted features are written to disk as NPZ files in parent of images dir.
 
 ### ML details
 <img src="pics/flow_chart_01.png" alt="Example image" width="600"/>
