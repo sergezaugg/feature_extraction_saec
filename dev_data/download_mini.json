@@ -1,0 +1,21 @@
+{
+    "min_duration_s": 10,
+    "max_duration_s": 15,
+    "quality": [
+        "A"
+    ],
+    "exclude_nd": true,
+    "country": [
+        "Switzerland",
+        "France"
+    ],
+    "species": [
+        "Lophophanes cristatus",
+        "Cyanistes caeruleus",
+        "Parus major",
+        "Pica pica",
+        "Corvus cornix",
+        "Corvus corax",
+        "Corvus frugilegus"
+    ]
+}

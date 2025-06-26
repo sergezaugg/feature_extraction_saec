@@ -1,6 +1,6 @@
 #--------------------------------
 # Author : Serge Zaugg
-# Description : 
+# Description : Small script to try methods interactively
 #--------------------------------
 
 import torch
@@ -18,23 +18,17 @@ path_images  = "D:/xc_real_projects/xc_sw_europe/xc_spectrograms"
 path_save = "C:/Users/sezau/Downloads"
 
 ae = SAEC_extractor(path_model = path_model, device = device) 
-
-ae.time_stamp_model
-
 # extract (will save to disk as npz)
 ae.extract(image_path = path_images, fe_save_path = path_save, batch_size = 16, shuffle = True , devel = True) # , ecut = 1)
-
-ae.X.shape
-ae.N.shape
-
 # time pool
 ae.time_pool(ecut=2)
 ae.time_pool()
-
-ae.X_pooled.shape
-
 # dim reduce
-[ae.reduce_dimension(n_neigh = 10, reduced_dim = d) for d in [2,4,8]]  
+ae.reduce_dimension(n_neigh = 10, reduced_dim = 8) 
 
+ae.time_stamp_model
+ae.X.shape
+ae.N.shape
+ae.X_pooled.shape
 ae.X_2D.shape
 ae.X_red.shape

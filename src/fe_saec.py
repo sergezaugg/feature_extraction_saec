@@ -90,9 +90,9 @@ class SpectroImageDataset(Dataset):
 
 class SAEC_extractor:
     """
-    A class for extracting features and evaluating image reconstructions using autoencoders.
+    A class for extracting features and evaluating image reconstructions using auto-encoders.
     This class provides utilities for dimensionality reduction, feature extraction, 
-    visualization, and pooling/aggregation of features over time using a trained autoencoder.
+    visualization, and pooling/aggregation of features over time using a trained auto-encoder.
     """
   
     def __init__(self, path_model, device): 
@@ -199,7 +199,7 @@ class SAEC_extractor:
         if not hasattr(self, 'X_pooled'):
             print("Please first run .time_pool() ")    
         else:
-            self.X_2D  = self._dim_reduce(self.X_pooled, n_neigh, 2) # make 2D feats needed for plot 
+            self.X_2D  = self._dim_reduce(self.X_pooled, n_neigh, 2) # make 2D features needed for plot 
             self.X_red = self._dim_reduce(self.X_pooled, n_neigh, reduced_dim)
             print('Shapes: ', self.X_pooled.shape, self.X_red.shape, self.X_2D.shape, self.N.shape)
             # save as npz
