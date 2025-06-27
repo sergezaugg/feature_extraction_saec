@@ -8,5 +8,7 @@ pip install https://github.com/sergezaugg/feature_extraction_saec/releases/downl
 pip install --force-reinstall torch torchvision --index-url https://download.pytorch.org/whl/cu126
 
 
-
+# need to install this order 
+pip install torch torchvision
+pip install -r requirements.txt
 
