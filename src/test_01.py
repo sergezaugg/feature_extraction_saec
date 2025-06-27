@@ -7,6 +7,10 @@ import torch
 from fe_saec import SAEC_extractor
 # from src.fe_saec import SAEC_extractor # for interactive dev of tests
 
+# temp to suppress warning triggered by UMAP when using sklearn
+import warnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
+
 torch.cuda.is_available()
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
