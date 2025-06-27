@@ -144,7 +144,7 @@ class SAEC_extractor:
         self.path_images = image_path
         self.fe_save_path = fe_save_path
         # Load TorchScript models 
-        model_enc = torch.jit.load(self.path_enc)
+        model_enc = torch.jit.load(self.path_enc, map_location = self.device)
         model_enc = model_enc.to(self.device)
         _ = model_enc.eval()
         # prepare dataloader
