@@ -6,8 +6,8 @@ name: install_deps_and_run_tests
 on:
   # push:
   #   branches: [ "devel" ] # let's trigger the test manually on devel
-  pull_request:
-    branches: [ "main" ] # .... 
+  # pull_request:
+  #   branches: [ "main" ] # .... 
   workflow_dispatch:  
 
 jobs:
