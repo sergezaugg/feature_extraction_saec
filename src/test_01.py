@@ -19,9 +19,6 @@ path_model = "./dev/dev_data/20250614_004030_encoder_script_GenBTP32_CH0256_epo0
 path_images = "./dev/dev_data/images"
 path_save = "./dev/dev_outp"
 
-# def test_placeholder():
-#     assert 44 == 44
-
 # test 1
 fe001 = SAEC_extractor(path_model = path_model, device = device) 
 fe001.extract(image_path = path_images, fe_save_path = path_save, batch_size = 16, shuffle = True , devel = True) 
