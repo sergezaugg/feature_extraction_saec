@@ -175,7 +175,14 @@ class SAEC_extractor:
 
     def time_pool(self, ecut=0):
         """
-        in devel
+        This method trims the time dimension of the feature array `self.X` by removing `ecut` frames 
+        from both the start and end (if `ecut` > 0). It then computes the mean and standard deviation 
+        along the time axis for each feature, concatenates these statistics, and stores the result in 
+        `self.X_pooled`.
+        Args:
+            ecut (int, optional): Number of frames to cut from each edge of the time dimension. If 0, no trimming is performed. Default is 0.
+        Returns:
+            None. The pooled features are stored in `self.X_pooled` as a NumPy array 
         """
         print('Feature dim at start:', self.X.shape)
         # cutting time edges
@@ -193,7 +200,17 @@ class SAEC_extractor:
       
     def reduce_dimension(self, n_neigh = 10, reduced_dim = 8):
         """
-        in devel
+        This method reduces the dimensionality of the pooled feature array `self.X_pooled` using UMAP.
+        It generates both a 2D representation (for visualization) and a reduced-dimensional representation
+        (for further analysis), and saves the results as a .npz file.
+        Args:
+            n_neigh (int, optional): Number of neighbors to use for UMAP. Default is 10.
+            reduced_dim (int, optional): Target number of dimensions for reduction. Default is 8.
+        Returns:
+            None. The reduced features are stored in `self.X_2D` (2D) and `self.X_red` (reduced_dim),
+            and saved to disk as a .npz file. 
+        Notes:
+            Requires that `self.X_pooled` is already computed (run `.time_pool()` first).
         """
         if not hasattr(self, 'X_pooled'):
             print("Please first run .time_pool() ")    
