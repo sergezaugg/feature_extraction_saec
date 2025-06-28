@@ -4,7 +4,8 @@
 #--------------------------------
 
 import torch
-from fe_saec import SAEC_extractor
+from fe_saec import SAEC_extractor # import for pip-installed package
+# from src.fe_saec import SAEC_extractor # import directly from source code 
 
 torch.cuda.is_available()
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
