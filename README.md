@@ -7,6 +7,7 @@
 * Extracted features are meant to be used in companion [project](https://github.com/sergezaugg/spectrogram_image_clustering) and its [frontend](https://spectrogram-image-clustering.streamlit.app/)
 
 ### Intallation (usage in Python project)
+* Tested for Python 3.11 and 3.12
 * Make a fresh venv an install **fe_saec** from Python package wheel found on [this github repo](https://github.com/sergezaugg/feature_extraction_saec/releases)
 * ```pip install https://github.com/sergezaugg/feature_extraction_saec/releases/download/vx.x.x/fe_saec-x.x.x-py3-none-any.whl```
 * **torch** and **torchvision** must be installed separately for specific CUDA version
