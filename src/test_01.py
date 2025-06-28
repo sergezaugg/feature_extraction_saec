@@ -21,7 +21,7 @@ path_save = "./dev/dev_outp"
 
 # test 1
 fe001 = SAEC_extractor(path_model = path_model, device = device) 
-fe001.extract(image_path = path_images, fe_save_path = path_save, batch_size = 16, shuffle = True , devel = True) 
+fe001.extract(image_path = path_images, fe_save_path = path_save, batch_size = 16, shuffle = True , n_batches = 4) 
 fe001.time_pool(ecut=0)
 fe001.reduce_dimension(n_neigh = 10, reduced_dim = 5)
 

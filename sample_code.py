@@ -4,7 +4,8 @@
 #--------------------------------
 
 import torch
-from fe_saec import SAEC_extractor
+from fe_saec import SAEC_extractor # import for pip-installed package
+# from src.fe_saec import SAEC_extractor # import directly from source code 
 
 torch.cuda.is_available()
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -19,7 +20,7 @@ path_save = "./dev/dev_outp"
 # instantiate with a model
 ae = SAEC_extractor(path_model = path_model, device = device) 
 # extract (will save to disk as npz)
-ae.extract(image_path = path_images, fe_save_path = path_save, batch_size = 16, shuffle = True , devel = True) 
+ae.extract(image_path = path_images, fe_save_path = path_save, batch_size = 16, shuffle = True , n_batches = 2) 
 # time pool
 ae.time_pool(ecut=0)
 ae.time_pool(ecut=2)

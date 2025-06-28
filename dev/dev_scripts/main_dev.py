@@ -19,7 +19,7 @@ path_save = "./dev/dev_outp"
 
 ae = SAEC_extractor(path_model = path_model, device = device) 
 # extract (will save to disk as npz)
-ae.extract(image_path = path_images, fe_save_path = path_save, batch_size = 16, shuffle = True , devel = True) 
+ae.extract(image_path = path_images, fe_save_path = path_save, batch_size = 16, shuffle = True , n_batches = 12) 
 # time pool
 ae.time_pool(ecut=2)
 ae.time_pool()

@@ -6,7 +6,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "fe_saec"
-version = "0.9.7"
+version = "0.9.8"
 description = "Feature extraction with pre-trained spectrogram auto-encoders"
 readme = "README.md"
 requires-python = ">=3.11"
