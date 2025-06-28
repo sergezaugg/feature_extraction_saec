@@ -129,7 +129,7 @@ class SAEC_extractor:
         X_out = scaler.fit_transform(X_trans)
         return(X_out)
 
-    def extract(self, image_path, fe_save_path,  batch_size = 128, shuffle = True, devel = False):
+    def extract(self, image_path, fe_save_path,  batch_size = 128, shuffle = True, n_batches = 2):
         """
         Extract features from images using a trained encoder and save the latent representation.
         Applies the encoder to all images in the specified directory and saves the resulting
@@ -137,7 +137,6 @@ class SAEC_extractor:
         Args:
             batch_size (int, optional): Batch size for processing images. Default is 128.
             shuffle (bool, optional): Whether to shuffle the dataset. Default is True.
-            devel (bool, optional): If True, only processes a few batches for development/testing. Default is False.
         Returns:
             None
         """
@@ -161,8 +160,8 @@ class SAEC_extractor:
             feat_li.append(encoded)
             imfiles.append(fi)
             print(len(imfiles))
-            if devel and i > 2:
-                break
+            if i >= n_batches-1:
+                break   
         # transform lists to array 
         feat = np.concatenate(feat_li)
         feat = feat.squeeze()
